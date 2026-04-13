@@ -1,0 +1,70 @@
+import { AuthenticatedUser } from '../auth/auth.types';
+import { SubscriptionPlan } from '../database/entities/washflow.entity';
+import { CreateSubscriptionDto } from './dto/subscription.dto';
+export declare class SubscriptionsService {
+    subscribe(user: AuthenticatedUser, dto: CreateSubscriptionDto): {
+        autoRenew: boolean;
+        startDate: string;
+        endDate: string;
+        isActive: boolean;
+        planName: SubscriptionPlan;
+        pricePerMonth: number;
+        itemsLimit: number;
+        discountPercentage: number;
+        id: `${string}-${string}-${string}-${string}-${string}`;
+        customerId: string;
+        businessId: string;
+    } | {
+        autoRenew: boolean;
+        startDate: string;
+        endDate: string;
+        isActive: boolean;
+        planName: SubscriptionPlan;
+        pricePerMonth: number;
+        itemsLimit: number;
+        discountPercentage: number;
+        id: `${string}-${string}-${string}-${string}-${string}`;
+        customerId: string;
+        businessId: string;
+    } | {
+        autoRenew: boolean;
+        startDate: string;
+        endDate: string;
+        isActive: boolean;
+        planName: SubscriptionPlan;
+        pricePerMonth: number;
+        itemsLimit: any;
+        discountPercentage: number;
+        id: `${string}-${string}-${string}-${string}-${string}`;
+        customerId: string;
+        businessId: string;
+    };
+    getMySubscription(user: AuthenticatedUser): {
+        isActive: boolean;
+        planName: SubscriptionPlan;
+        pricePerMonth: number;
+        itemsLimit: number;
+        discountPercentage: number;
+        customerId: string;
+    };
+    cancel(id: string): {
+        id: string;
+        cancelled: boolean;
+    };
+    listPlans(): ({
+        planName: SubscriptionPlan;
+        pricePerMonth: number;
+        itemsLimit: number;
+        discountPercentage: number;
+    } | {
+        planName: SubscriptionPlan;
+        pricePerMonth: number;
+        itemsLimit: number;
+        discountPercentage: number;
+    } | {
+        planName: SubscriptionPlan;
+        pricePerMonth: number;
+        itemsLimit: any;
+        discountPercentage: number;
+    })[];
+}
