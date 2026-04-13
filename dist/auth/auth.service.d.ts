@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { OtpVerificationEntity, UserEntity } from '../database/entities';
 import { AuthenticatedUser } from './auth.types';
 import { LoginDto } from './dto/login.dto';
+import { LoginWithOtpDto, RegisterWithOtpDto } from './dto/otp-auth.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/reset-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -23,6 +24,20 @@ export declare class AuthService {
         };
     }>;
     login(dto: LoginDto): Promise<{
+        user: AuthenticatedUser;
+        tokens: {
+            accessToken: string;
+            refreshToken: string;
+        };
+    }>;
+    registerWithOtp(dto: RegisterWithOtpDto): Promise<{
+        user: AuthenticatedUser;
+        tokens: {
+            accessToken: string;
+            refreshToken: string;
+        };
+    }>;
+    loginWithOtp(dto: LoginWithOtpDto): Promise<{
         user: AuthenticatedUser;
         tokens: {
             accessToken: string;
@@ -55,6 +70,14 @@ export declare class AuthService {
         passwordUpdatedAt: string;
     }>;
     me(user: AuthenticatedUser): Promise<AuthenticatedUser>;
+    ensureAdminAccount(email: string, password: string, name?: string): Promise<{
+        created: boolean;
+        updated: boolean;
+        email: string;
+    }>;
     private buildTokens;
+    private consumeOtp;
+    private normalizeRecipient;
+    private buildAdminPhone;
     private toAuthenticatedUser;
 }

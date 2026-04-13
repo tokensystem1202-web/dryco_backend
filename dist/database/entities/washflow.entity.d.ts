@@ -32,6 +32,15 @@ export declare enum NotificationType {
     PROMO = "promo",
     SYSTEM = "system"
 }
+export declare enum BusinessRegistrationType {
+    LAUNDRY = "laundry",
+    DRY_CLEAN = "dry_clean"
+}
+export declare enum BusinessRegistrationStatus {
+    PENDING = "pending",
+    APPROVED = "approved",
+    REJECTED = "rejected"
+}
 declare abstract class BaseEntityFields {
     id: string;
     createdAt: Date;
@@ -62,6 +71,17 @@ export declare class BusinessEntity extends BaseEntityFields {
     commissionRate: number;
     rating: number;
     totalOrders: number;
+}
+export declare class BusinessRegistrationEntity extends BaseEntityFields {
+    businessName: string;
+    ownerName: string;
+    phone: string;
+    address: string;
+    serviceArea: string;
+    businessType: BusinessRegistrationType;
+    idProofPath?: string;
+    shopImagePath?: string;
+    status: BusinessRegistrationStatus;
 }
 export declare class ServiceEntity extends BaseEntityFields {
     businessId: string;

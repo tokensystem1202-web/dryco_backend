@@ -14,7 +14,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BusinessesController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const swagger_1 = require("@nestjs/swagger");
+const multer_1 = require("multer");
+const path_1 = require("path");
+const fs_1 = require("fs");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_enum_1 = require("../auth/roles.enum");
@@ -22,9 +26,23 @@ const current_user_decorator_1 = require("../common/decorators/current-user.deco
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const business_dto_1 = require("./dto/business.dto");
 const businesses_service_1 = require("./businesses.service");
+const businessRegistrationUploadsPath = (0, path_1.join)(process.cwd(), 'uploads', 'business-registrations');
+function ensureBusinessRegistrationUploadsPath() {
+    if (!(0, fs_1.existsSync)(businessRegistrationUploadsPath)) {
+        (0, fs_1.mkdirSync)(businessRegistrationUploadsPath, { recursive: true });
+    }
+}
+function buildUploadName(prefix, originalName) {
+    const extension = (0, path_1.extname)(originalName) || '.bin';
+    const normalizedPrefix = prefix.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
+    return `${normalizedPrefix}-${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
+}
 let BusinessesController = class BusinessesController {
     constructor(businessesService) {
         this.businessesService = businessesService;
+    }
+    submitBusinessRegistration(dto, files) {
+        return this.businessesService.submitPublicRegistration(dto, files ?? {});
     }
     registerBusiness(user, dto) {
         return this.businessesService.registerBusiness(user, dto);
@@ -47,6 +65,18 @@ let BusinessesController = class BusinessesController {
     adminListBusinesses() {
         return this.businessesService.adminListBusinesses();
     }
+    adminListBusinessRegistrations() {
+        return this.businessesService.adminListBusinessRegistrations();
+    }
+    adminGetBusinessRegistration(id) {
+        return this.businessesService.getBusinessRegistrationDetails(id);
+    }
+    approveBusinessRegistration(id) {
+        return this.businessesService.approveBusinessRegistration(id);
+    }
+    rejectBusinessRegistration(id) {
+        return this.businessesService.rejectBusinessRegistration(id);
+    }
     approveBusiness(id, dto) {
         return this.businessesService.approveBusiness(id, dto);
     }
@@ -58,6 +88,28 @@ let BusinessesController = class BusinessesController {
     }
 };
 exports.BusinessesController = BusinessesController;
+__decorate([
+    (0, common_1.Post)('business/register'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileFieldsInterceptor)([
+        { name: 'idProof', maxCount: 1 },
+        { name: 'shopImage', maxCount: 1 },
+    ], {
+        storage: (0, multer_1.diskStorage)({
+            destination: (_request, _file, callback) => {
+                ensureBusinessRegistrationUploadsPath();
+                callback(null, businessRegistrationUploadsPath);
+            },
+            filename: (_request, file, callback) => {
+                callback(null, buildUploadName(file.fieldname, file.originalname));
+            },
+        }),
+    })),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.UploadedFiles)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [business_dto_1.PublicBusinessRegistrationDto, Object]),
+    __metadata("design:returntype", void 0)
+], BusinessesController.prototype, "submitBusinessRegistration", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
@@ -125,6 +177,45 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], BusinessesController.prototype, "adminListBusinesses", null);
+__decorate([
+    (0, common_1.Get)('admin/business-registrations'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.ADMIN),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], BusinessesController.prototype, "adminListBusinessRegistrations", null);
+__decorate([
+    (0, common_1.Get)('admin/business-registrations/:id'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.ADMIN),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], BusinessesController.prototype, "adminGetBusinessRegistration", null);
+__decorate([
+    (0, common_1.Patch)('business/:id/approve'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.ADMIN),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], BusinessesController.prototype, "approveBusinessRegistration", null);
+__decorate([
+    (0, common_1.Patch)('business/:id/reject'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.ADMIN),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], BusinessesController.prototype, "rejectBusinessRegistration", null);
 __decorate([
     (0, common_1.Patch)('admin/businesses/:id/approve'),
     (0, swagger_1.ApiBearerAuth)(),

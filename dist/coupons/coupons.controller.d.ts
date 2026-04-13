@@ -1,53 +1,19 @@
+import { AuthenticatedUser } from '../auth/auth.types';
 import { CouponsService } from './coupons.service';
 import { CreateCouponDto, UpdateCouponDto, ValidateCouponDto } from './dto/coupon.dto';
 export declare class CouponsController {
     private readonly couponsService;
     constructor(couponsService: CouponsService);
-    create(dto: CreateCouponDto): {
-        isActive: boolean;
-        usedCount: number;
-        businessId?: string;
-        code: string;
-        discountType: import("../database/entities/washflow.entity").DiscountType;
-        discountValue: number;
-        minOrderValue: number;
-        maxDiscount?: number;
-        usageLimit?: number;
-        validFrom: string;
-        validTill: string;
-        id: `${string}-${string}-${string}-${string}-${string}`;
-    };
-    list(): {
-        code: string;
-        discountType: import("../database/entities/washflow.entity").DiscountType;
-        discountValue: number;
-        minOrderValue: number;
-        maxDiscount: number;
-        usageLimit: number;
-        usedCount: number;
-        validFrom: string;
-        validTill: string;
-        isActive: boolean;
-    }[];
-    update(id: string, dto: UpdateCouponDto): {
-        businessId?: string;
-        code: string;
-        discountType: import("../database/entities/washflow.entity").DiscountType;
-        discountValue: number;
-        minOrderValue: number;
-        maxDiscount?: number;
-        usageLimit?: number;
-        validFrom: string;
-        validTill: string;
-        id: string;
-    };
-    remove(id: string): {
+    create(user: AuthenticatedUser, dto: CreateCouponDto): Promise<import("../database/entities").CouponEntity>;
+    list(user: AuthenticatedUser): Promise<import("../database/entities").CouponEntity[]>;
+    update(user: AuthenticatedUser, id: string, dto: UpdateCouponDto): Promise<import("../database/entities").CouponEntity>;
+    remove(user: AuthenticatedUser, id: string): Promise<{
         id: string;
         deleted: boolean;
-    };
-    validate(dto: ValidateCouponDto): {
+    }>;
+    validate(dto: ValidateCouponDto): Promise<{
         code: string;
         valid: boolean;
         discountAmount: number;
-    };
+    }>;
 }

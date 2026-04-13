@@ -47,6 +47,9 @@ let OrdersController = class OrdersController {
     updateOrderStatus(user, id, dto) {
         return this.ordersService.updateOrderStatus(user, id, dto);
     }
+    updateOrderStatusAlias(user, id, dto) {
+        return this.ordersService.updateOrderStatus(user, id, dto);
+    }
     assignRider(user, id, dto) {
         return this.ordersService.assignRider(user, id, dto);
     }
@@ -118,6 +121,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, order_dto_1.UpdateOrderStatusDto]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "updateOrderStatus", null);
+__decorate([
+    (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.BUSINESS),
+    (0, common_1.Patch)('orders/:id/status'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, order_dto_1.UpdateOrderStatusDto]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "updateOrderStatusAlias", null);
 __decorate([
     (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.BUSINESS),
     (0, common_1.Patch)('business/orders/:id/assign-rider'),

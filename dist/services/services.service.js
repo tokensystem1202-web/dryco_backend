@@ -30,6 +30,9 @@ let ServicesService = class ServicesService {
         if (business.userId !== user.userId) {
             throw new common_1.ForbiddenException('You can add services only to your own business');
         }
+        if (!business.isApproved || !business.isActive) {
+            throw new common_1.ForbiddenException('Only approved businesses can manage pricing');
+        }
         return this.servicesRepository.save(this.servicesRepository.create({
             ...dto,
             isActive: true,
@@ -50,6 +53,9 @@ let ServicesService = class ServicesService {
         if (!business || business.userId !== user.userId) {
             throw new common_1.ForbiddenException('You can update only your own business services');
         }
+        if (!business.isApproved || !business.isActive) {
+            throw new common_1.ForbiddenException('Only approved businesses can manage pricing');
+        }
         Object.assign(service, dto);
         return this.servicesRepository.save(service);
     }
@@ -61,6 +67,9 @@ let ServicesService = class ServicesService {
         const business = await this.businessesRepository.findOne({ where: { id: service.businessId } });
         if (!business || business.userId !== user.userId) {
             throw new common_1.ForbiddenException('You can delete only your own business services');
+        }
+        if (!business.isApproved || !business.isActive) {
+            throw new common_1.ForbiddenException('Only approved businesses can manage pricing');
         }
         service.isActive = false;
         await this.servicesRepository.save(service);

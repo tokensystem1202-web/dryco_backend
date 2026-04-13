@@ -1,3 +1,4 @@
+import { BusinessRegistrationType } from '../../database/entities';
 export declare class CreateBusinessDto {
     businessName: string;
     address: string;
@@ -20,4 +21,12 @@ export declare class ApprovalDto {
 }
 export declare class ToggleBusinessStatusDto {
     isActive: boolean;
+}
+export declare class PublicBusinessRegistrationDto {
+    businessName: string;
+    ownerName: string;
+    phone: string;
+    address: string;
+    serviceArea: string;
+    businessType: BusinessRegistrationType;
 }

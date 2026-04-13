@@ -46,6 +46,17 @@ export enum NotificationType {
   SYSTEM = 'system',
 }
 
+export enum BusinessRegistrationType {
+  LAUNDRY = 'laundry',
+  DRY_CLEAN = 'dry_clean',
+}
+
+export enum BusinessRegistrationStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
 abstract class BaseEntityFields {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -127,6 +138,36 @@ export class BusinessEntity extends BaseEntityFields {
 
   @Column({ name: 'total_orders', default: 0 })
   totalOrders: number;
+}
+
+@Entity('business_registrations')
+export class BusinessRegistrationEntity extends BaseEntityFields {
+  @Column({ name: 'business_name' })
+  businessName: string;
+
+  @Column({ name: 'owner_name' })
+  ownerName: string;
+
+  @Column()
+  phone: string;
+
+  @Column()
+  address: string;
+
+  @Column({ name: 'service_area' })
+  serviceArea: string;
+
+  @Column({ name: 'business_type', type: 'enum', enum: BusinessRegistrationType })
+  businessType: BusinessRegistrationType;
+
+  @Column({ name: 'id_proof_path', nullable: true })
+  idProofPath?: string;
+
+  @Column({ name: 'shop_image_path', nullable: true })
+  shopImagePath?: string;
+
+  @Column({ type: 'enum', enum: BusinessRegistrationStatus, default: BusinessRegistrationStatus.PENDING })
+  status: BusinessRegistrationStatus;
 }
 
 @Entity('services')

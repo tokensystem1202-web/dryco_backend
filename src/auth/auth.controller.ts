@@ -10,6 +10,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { LoginWithOtpDto, RegisterWithOtpDto } from './dto/otp-auth.dto';
 import { SendOtpDto, VerifyOtpDto } from './dto/otp.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/reset-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -28,6 +29,16 @@ export class AuthController {
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('register-otp')
+  registerWithOtp(@Body() dto: RegisterWithOtpDto) {
+    return this.authService.registerWithOtp(dto);
+  }
+
+  @Post('login-otp')
+  loginWithOtp(@Body() dto: LoginWithOtpDto) {
+    return this.authService.loginWithOtp(dto);
   }
 
   @Post('refresh-token')

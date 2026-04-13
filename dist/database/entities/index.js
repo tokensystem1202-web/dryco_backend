@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OtpVerificationEntity = exports.NotificationEntity = exports.CommissionEntity = exports.ReviewEntity = exports.CouponEntity = exports.RiderEntity = exports.SubscriptionEntity = exports.OrderItemEntity = exports.OrderEntity = exports.ServiceEntity = exports.BusinessEntity = exports.UserEntity = exports.washflowEntities = void 0;
+exports.OtpVerificationEntity = exports.NotificationEntity = exports.CommissionEntity = exports.ReviewEntity = exports.CouponEntity = exports.RiderEntity = exports.SubscriptionEntity = exports.OrderItemEntity = exports.OrderEntity = exports.ServiceEntity = exports.BusinessRegistrationType = exports.BusinessRegistrationStatus = exports.BusinessRegistrationEntity = exports.BusinessEntity = exports.UserEntity = exports.washflowEntities = void 0;
 const washflow_entity_1 = require("./washflow.entity");
 exports.washflowEntities = [
     washflow_entity_1.UserEntity,
     washflow_entity_1.BusinessEntity,
+    washflow_entity_1.BusinessRegistrationEntity,
     washflow_entity_1.ServiceEntity,
     washflow_entity_1.OrderEntity,
     washflow_entity_1.OrderItemEntity,
@@ -19,6 +20,9 @@ exports.washflowEntities = [
 var washflow_entity_2 = require("./washflow.entity");
 Object.defineProperty(exports, "UserEntity", { enumerable: true, get: function () { return washflow_entity_2.UserEntity; } });
 Object.defineProperty(exports, "BusinessEntity", { enumerable: true, get: function () { return washflow_entity_2.BusinessEntity; } });
+Object.defineProperty(exports, "BusinessRegistrationEntity", { enumerable: true, get: function () { return washflow_entity_2.BusinessRegistrationEntity; } });
+Object.defineProperty(exports, "BusinessRegistrationStatus", { enumerable: true, get: function () { return washflow_entity_2.BusinessRegistrationStatus; } });
+Object.defineProperty(exports, "BusinessRegistrationType", { enumerable: true, get: function () { return washflow_entity_2.BusinessRegistrationType; } });
 Object.defineProperty(exports, "ServiceEntity", { enumerable: true, get: function () { return washflow_entity_2.ServiceEntity; } });
 Object.defineProperty(exports, "OrderEntity", { enumerable: true, get: function () { return washflow_entity_2.OrderEntity; } });
 Object.defineProperty(exports, "OrderItemEntity", { enumerable: true, get: function () { return washflow_entity_2.OrderItemEntity; } });

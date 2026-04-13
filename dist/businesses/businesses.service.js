@@ -15,15 +15,50 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BusinessesService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const bcryptjs_1 = require("bcryptjs");
+const crypto_1 = require("crypto");
 const typeorm_2 = require("typeorm");
 const roles_enum_1 = require("../auth/roles.enum");
 const entities_1 = require("../database/entities");
 let BusinessesService = class BusinessesService {
-    constructor(businessesRepository, servicesRepository, ordersRepository, ridersRepository) {
+    constructor(businessesRepository, businessRegistrationsRepository, usersRepository, servicesRepository, ordersRepository, ridersRepository) {
         this.businessesRepository = businessesRepository;
+        this.businessRegistrationsRepository = businessRegistrationsRepository;
+        this.usersRepository = usersRepository;
         this.servicesRepository = servicesRepository;
         this.ordersRepository = ordersRepository;
         this.ridersRepository = ridersRepository;
+    }
+    async submitPublicRegistration(dto, files) {
+        const normalizedPhone = dto.phone.trim();
+        const existingPending = await this.businessRegistrationsRepository.findOne({
+            where: {
+                phone: normalizedPhone,
+                status: entities_1.BusinessRegistrationStatus.PENDING,
+            },
+        });
+        if (existingPending) {
+            throw new common_1.BadRequestException('A pending business registration already exists for this phone number');
+        }
+        const registration = this.businessRegistrationsRepository.create({
+            businessName: dto.businessName.trim(),
+            ownerName: dto.ownerName.trim(),
+            phone: normalizedPhone,
+            address: dto.address.trim(),
+            serviceArea: dto.serviceArea.trim(),
+            businessType: dto.businessType,
+            idProofPath: files.idProof?.[0]?.filename,
+            shopImagePath: files.shopImage?.[0]?.filename,
+            status: entities_1.BusinessRegistrationStatus.PENDING,
+        });
+        const saved = await this.businessRegistrationsRepository.save(registration);
+        return {
+            id: saved.id,
+            name: saved.businessName,
+            owner: saved.ownerName,
+            phone: saved.phone,
+            status: saved.status,
+        };
     }
     async registerBusiness(user, dto) {
         const existingBusiness = await this.businessesRepository.findOne({
@@ -121,6 +156,105 @@ let BusinessesService = class BusinessesService {
     async adminListBusinesses() {
         return this.businessesRepository.find({ order: { createdAt: 'DESC' } });
     }
+    async adminListBusinessRegistrations() {
+        const registrations = await this.businessRegistrationsRepository.find({
+            order: { createdAt: 'DESC' },
+        });
+        return registrations.map((registration) => this.toAdminRegistrationView(registration));
+    }
+    async getBusinessRegistrationDetails(id) {
+        const registration = await this.businessRegistrationsRepository.findOne({ where: { id } });
+        if (!registration) {
+            throw new common_1.NotFoundException('Business registration not found');
+        }
+        return this.toAdminRegistrationView(registration);
+    }
+    async approveBusinessRegistration(id) {
+        const registration = await this.businessRegistrationsRepository.findOne({ where: { id } });
+        if (!registration) {
+            throw new common_1.NotFoundException('Business registration not found');
+        }
+        if (registration.status === entities_1.BusinessRegistrationStatus.REJECTED) {
+            throw new common_1.BadRequestException('Rejected registration cannot be approved directly');
+        }
+        const existingPhoneUser = await this.usersRepository.findOne({
+            where: { phone: registration.phone },
+        });
+        if (existingPhoneUser && existingPhoneUser.role !== roles_enum_1.UserRole.BUSINESS) {
+            throw new common_1.ConflictException('This phone number already belongs to a non-business account');
+        }
+        const emailSeed = `${registration.businessName}-${registration.id}`
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        const generatedEmail = `${emailSeed || 'business'}@partners.dryco.local`;
+        const user = existingPhoneUser
+            ? await this.usersRepository.save({
+                ...existingPhoneUser,
+                name: registration.ownerName,
+                role: roles_enum_1.UserRole.BUSINESS,
+                address: registration.address,
+                city: this.extractCity(registration),
+                pincode: this.extractPincode(registration),
+                isActive: true,
+            })
+            : await this.usersRepository.save(this.usersRepository.create({
+                name: registration.ownerName,
+                email: generatedEmail,
+                phone: registration.phone,
+                passwordHash: await (0, bcryptjs_1.hash)((0, crypto_1.randomBytes)(24).toString('hex'), 10),
+                role: roles_enum_1.UserRole.BUSINESS,
+                address: registration.address,
+                city: this.extractCity(registration),
+                pincode: this.extractPincode(registration),
+                isActive: true,
+            }));
+        const existingBusiness = await this.businessesRepository.findOne({
+            where: { userId: user.id },
+        });
+        const business = existingBusiness
+            ? existingBusiness
+            : await this.businessesRepository.save(this.businessesRepository.create({
+                userId: user.id,
+                businessName: registration.businessName,
+                address: registration.address,
+                city: this.extractCity(registration),
+                pincode: this.extractPincode(registration),
+                gstNumber: null,
+                isApproved: true,
+                isActive: true,
+                commissionRate: 15,
+                rating: 0,
+                totalOrders: 0,
+            }));
+        if (existingBusiness && !existingBusiness.isApproved) {
+            existingBusiness.isApproved = true;
+            existingBusiness.isActive = true;
+            await this.businessesRepository.save(existingBusiness);
+        }
+        registration.status = entities_1.BusinessRegistrationStatus.APPROVED;
+        await this.businessRegistrationsRepository.save(registration);
+        return {
+            registrationId: registration.id,
+            status: registration.status,
+            businessId: business.id,
+            loginPhone: user.phone,
+            loginMode: 'otp',
+            businessPortalEnabled: true,
+        };
+    }
+    async rejectBusinessRegistration(id) {
+        const registration = await this.businessRegistrationsRepository.findOne({ where: { id } });
+        if (!registration) {
+            throw new common_1.NotFoundException('Business registration not found');
+        }
+        registration.status = entities_1.BusinessRegistrationStatus.REJECTED;
+        await this.businessRegistrationsRepository.save(registration);
+        return {
+            registrationId: registration.id,
+            status: registration.status,
+        };
+    }
     async approveBusiness(id, dto) {
         const business = await this.businessesRepository.findOne({ where: { id } });
         if (!business) {
@@ -145,15 +279,49 @@ let BusinessesService = class BusinessesService {
         business.commissionRate = dto.commissionRate;
         return this.businessesRepository.save(business);
     }
+    toAdminRegistrationView(registration) {
+        return {
+            id: registration.id,
+            businessName: registration.businessName,
+            ownerName: registration.ownerName,
+            phone: registration.phone,
+            address: registration.address,
+            serviceArea: registration.serviceArea,
+            businessType: registration.businessType,
+            status: registration.status,
+            createdAt: registration.createdAt,
+            documents: {
+                idProofUrl: registration.idProofPath
+                    ? `/uploads/business-registrations/${registration.idProofPath}`
+                    : null,
+                shopImageUrl: registration.shopImagePath
+                    ? `/uploads/business-registrations/${registration.shopImagePath}`
+                    : null,
+            },
+        };
+    }
+    extractCity(registration) {
+        const serviceAreaToken = registration.serviceArea.split(',')[0]?.trim();
+        const addressToken = registration.address.split(',')[1]?.trim();
+        return serviceAreaToken || addressToken || 'Unknown City';
+    }
+    extractPincode(registration) {
+        const match = `${registration.address} ${registration.serviceArea}`.match(/\b\d{6}\b/);
+        return match?.[0] ?? '000000';
+    }
 };
 exports.BusinessesService = BusinessesService;
 exports.BusinessesService = BusinessesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(entities_1.BusinessEntity)),
-    __param(1, (0, typeorm_1.InjectRepository)(entities_1.ServiceEntity)),
-    __param(2, (0, typeorm_1.InjectRepository)(entities_1.OrderEntity)),
-    __param(3, (0, typeorm_1.InjectRepository)(entities_1.RiderEntity)),
+    __param(1, (0, typeorm_1.InjectRepository)(entities_1.BusinessRegistrationEntity)),
+    __param(2, (0, typeorm_1.InjectRepository)(entities_1.UserEntity)),
+    __param(3, (0, typeorm_1.InjectRepository)(entities_1.ServiceEntity)),
+    __param(4, (0, typeorm_1.InjectRepository)(entities_1.OrderEntity)),
+    __param(5, (0, typeorm_1.InjectRepository)(entities_1.RiderEntity)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository])

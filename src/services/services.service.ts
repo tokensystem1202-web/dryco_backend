@@ -29,6 +29,10 @@ export class ServicesService {
       throw new ForbiddenException('You can add services only to your own business');
     }
 
+    if (!business.isApproved || !business.isActive) {
+      throw new ForbiddenException('Only approved businesses can manage pricing');
+    }
+
     return this.servicesRepository.save(
       this.servicesRepository.create({
         ...dto,
@@ -56,6 +60,10 @@ export class ServicesService {
       throw new ForbiddenException('You can update only your own business services');
     }
 
+    if (!business.isApproved || !business.isActive) {
+      throw new ForbiddenException('Only approved businesses can manage pricing');
+    }
+
     Object.assign(service, dto);
     return this.servicesRepository.save(service);
   }
@@ -70,6 +78,10 @@ export class ServicesService {
     const business = await this.businessesRepository.findOne({ where: { id: service.businessId } });
     if (!business || business.userId !== user.userId) {
       throw new ForbiddenException('You can delete only your own business services');
+    }
+
+    if (!business.isApproved || !business.isActive) {
+      throw new ForbiddenException('Only approved businesses can manage pricing');
     }
 
     service.isActive = false;

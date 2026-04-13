@@ -1,5 +1,6 @@
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { LoginWithOtpDto, RegisterWithOtpDto } from './dto/otp-auth.dto';
 import { SendOtpDto, VerifyOtpDto } from './dto/otp.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/reset-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -15,6 +16,20 @@ export declare class AuthController {
         };
     }>;
     login(dto: LoginDto): Promise<{
+        user: import("./auth.types").AuthenticatedUser;
+        tokens: {
+            accessToken: string;
+            refreshToken: string;
+        };
+    }>;
+    registerWithOtp(dto: RegisterWithOtpDto): Promise<{
+        user: import("./auth.types").AuthenticatedUser;
+        tokens: {
+            accessToken: string;
+            refreshToken: string;
+        };
+    }>;
+    loginWithOtp(dto: LoginWithOtpDto): Promise<{
         user: import("./auth.types").AuthenticatedUser;
         tokens: {
             accessToken: string;

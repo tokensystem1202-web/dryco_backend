@@ -18,6 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_enum_1 = require("../auth/roles.enum");
+const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const coupons_service_1 = require("./coupons.service");
 const coupon_dto_1 = require("./dto/coupon.dto");
@@ -25,17 +26,17 @@ let CouponsController = class CouponsController {
     constructor(couponsService) {
         this.couponsService = couponsService;
     }
-    create(dto) {
-        return this.couponsService.create(dto);
+    create(user, dto) {
+        return this.couponsService.create(user, dto);
     }
-    list() {
-        return this.couponsService.list();
+    list(user) {
+        return this.couponsService.list(user);
     }
-    update(id, dto) {
-        return this.couponsService.update(id, dto);
+    update(user, id, dto) {
+        return this.couponsService.update(user, id, dto);
     }
-    remove(id) {
-        return this.couponsService.remove(id);
+    remove(user, id) {
+        return this.couponsService.remove(user, id);
     }
     validate(dto) {
         return this.couponsService.validate(dto);
@@ -47,9 +48,10 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.BUSINESS, roles_enum_1.UserRole.ADMIN),
     (0, common_1.Post)(),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [coupon_dto_1.CreateCouponDto]),
+    __metadata("design:paramtypes", [Object, coupon_dto_1.CreateCouponDto]),
     __metadata("design:returntype", void 0)
 ], CouponsController.prototype, "create", null);
 __decorate([
@@ -57,8 +59,9 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.BUSINESS, roles_enum_1.UserRole.ADMIN),
     (0, common_1.Get)(),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], CouponsController.prototype, "list", null);
 __decorate([
@@ -66,10 +69,11 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.BUSINESS, roles_enum_1.UserRole.ADMIN),
     (0, common_1.Patch)(':id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, coupon_dto_1.UpdateCouponDto]),
+    __metadata("design:paramtypes", [Object, String, coupon_dto_1.UpdateCouponDto]),
     __metadata("design:returntype", void 0)
 ], CouponsController.prototype, "update", null);
 __decorate([
@@ -77,9 +81,10 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(roles_enum_1.UserRole.BUSINESS, roles_enum_1.UserRole.ADMIN),
     (0, common_1.Delete)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], CouponsController.prototype, "remove", null);
 __decorate([

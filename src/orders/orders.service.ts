@@ -32,7 +32,7 @@ const STATUS_FLOW: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.REQUESTED]: [OrderStatus.ACCEPTED, OrderStatus.CANCELLED],
   [OrderStatus.ACCEPTED]: [OrderStatus.PICKED_UP, OrderStatus.CANCELLED],
   [OrderStatus.PICKED_UP]: [OrderStatus.CLEANING],
-  [OrderStatus.CLEANING]: [OrderStatus.OUT_FOR_DELIVERY],
+  [OrderStatus.CLEANING]: [OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED],
   [OrderStatus.OUT_FOR_DELIVERY]: [OrderStatus.DELIVERED],
   [OrderStatus.DELIVERED]: [],
   [OrderStatus.CANCELLED]: [],
@@ -270,6 +270,10 @@ export class OrdersService {
       throw new NotFoundException('Business not found for this user');
     }
 
+    if (!business.isApproved || !business.isActive) {
+      throw new ForbiddenException('Only approved businesses can manage live orders');
+    }
+
     const builder = this.ordersRepository.createQueryBuilder('order');
     builder.where('order.businessId = :businessId', { businessId: business.id });
 
@@ -281,9 +285,17 @@ export class OrdersService {
       builder.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: query.paymentStatus });
     }
 
+    const items = await builder.orderBy('order.createdAt', 'DESC').getMany();
+    const orderItems = items.length
+      ? await this.orderItemsRepository.find({ where: { orderId: In(items.map((item) => item.id)) } })
+      : [];
+
     return {
       filters: query,
-      items: await builder.orderBy('order.createdAt', 'DESC').getMany(),
+      items: items.map((item) => ({
+        ...item,
+        items: orderItems.filter((orderItem) => orderItem.orderId === item.id),
+      })),
     };
   }
 
@@ -420,6 +432,10 @@ export class OrdersService {
 
     if (business.userId !== user.userId) {
       throw new ForbiddenException('You can manage only your own business orders');
+    }
+
+    if (!business.isApproved || !business.isActive) {
+      throw new ForbiddenException('Only approved businesses can manage orders');
     }
   }
 

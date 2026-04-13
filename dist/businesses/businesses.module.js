@@ -17,7 +17,16 @@ let BusinessesModule = class BusinessesModule {
 exports.BusinessesModule = BusinessesModule;
 exports.BusinessesModule = BusinessesModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.BusinessEntity, entities_1.ServiceEntity, entities_1.OrderEntity, entities_1.RiderEntity])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([
+                entities_1.BusinessEntity,
+                entities_1.BusinessRegistrationEntity,
+                entities_1.UserEntity,
+                entities_1.ServiceEntity,
+                entities_1.OrderEntity,
+                entities_1.RiderEntity,
+            ]),
+        ],
         controllers: [businesses_controller_1.BusinessesController],
         providers: [businesses_service_1.BusinessesService],
         exports: [businesses_service_1.BusinessesService],

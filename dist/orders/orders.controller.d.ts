@@ -79,9 +79,36 @@ export declare class OrdersController {
     }>;
     getBusinessOrders(user: AuthenticatedUser, query: Record<string, string | undefined>): Promise<{
         filters: Record<string, string>;
-        items: import("../database/entities").OrderEntity[];
+        items: {
+            items: import("../database/entities").OrderItemEntity[];
+            orderNumber: string;
+            customerId: string;
+            businessId: string;
+            riderId?: string;
+            status: import("../database/entities/washflow.entity").OrderStatus;
+            pickupSlot: string;
+            deliverySlot: string;
+            pickupDate: string;
+            deliveryDate: string;
+            subtotal: number;
+            discountAmount: number;
+            couponCode?: string;
+            taxAmount: number;
+            totalAmount: number;
+            paymentStatus: import("../database/entities/washflow.entity").PaymentStatus;
+            paymentMethod?: string;
+            paymentId?: string;
+            specialInstructions?: string;
+            id: string;
+            createdAt: Date;
+            updatedAt?: Date;
+        }[];
     }>;
     updateOrderStatus(user: AuthenticatedUser, id: string, dto: UpdateOrderStatusDto): Promise<{
+        orderId: string;
+        status: import("../database/entities/washflow.entity").OrderStatus;
+    }>;
+    updateOrderStatusAlias(user: AuthenticatedUser, id: string, dto: UpdateOrderStatusDto): Promise<{
         orderId: string;
         status: import("../database/entities/washflow.entity").OrderStatus;
     }>;

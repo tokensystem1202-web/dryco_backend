@@ -1,5 +1,6 @@
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { BusinessRegistrationType } from '../../database/entities';
 
 export class CreateBusinessDto {
   @ApiProperty()
@@ -69,4 +70,30 @@ export class ToggleBusinessStatusDto {
   @ApiProperty()
   @IsBoolean()
   isActive: boolean;
+}
+
+export class PublicBusinessRegistrationDto {
+  @ApiProperty()
+  @IsString()
+  businessName: string;
+
+  @ApiProperty()
+  @IsString()
+  ownerName: string;
+
+  @ApiProperty()
+  @IsString()
+  phone: string;
+
+  @ApiProperty()
+  @IsString()
+  address: string;
+
+  @ApiProperty()
+  @IsString()
+  serviceArea: string;
+
+  @ApiProperty({ enum: BusinessRegistrationType })
+  @IsEnum(BusinessRegistrationType)
+  businessType: BusinessRegistrationType;
 }

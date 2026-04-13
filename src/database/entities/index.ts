@@ -1,5 +1,8 @@
 import {
   BusinessEntity,
+  BusinessRegistrationEntity,
+  BusinessRegistrationStatus,
+  BusinessRegistrationType,
   CommissionEntity,
   CouponEntity,
   NotificationEntity,
@@ -16,6 +19,7 @@ import {
 export const washflowEntities = [
   UserEntity,
   BusinessEntity,
+  BusinessRegistrationEntity,
   ServiceEntity,
   OrderEntity,
   OrderItemEntity,
@@ -31,6 +35,9 @@ export const washflowEntities = [
 export {
   UserEntity,
   BusinessEntity,
+  BusinessRegistrationEntity,
+  BusinessRegistrationStatus,
+  BusinessRegistrationType,
   ServiceEntity,
   OrderEntity,
   OrderItemEntity,

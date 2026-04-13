@@ -9,9 +9,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ToggleBusinessStatusDto = exports.ApprovalDto = exports.UpdateCommissionDto = exports.UpdateBusinessDto = exports.CreateBusinessDto = void 0;
+exports.PublicBusinessRegistrationDto = exports.ToggleBusinessStatusDto = exports.ApprovalDto = exports.UpdateCommissionDto = exports.UpdateBusinessDto = exports.CreateBusinessDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
+const entities_1 = require("../../database/entities");
 class CreateBusinessDto {
 }
 exports.CreateBusinessDto = CreateBusinessDto;
@@ -100,4 +101,37 @@ __decorate([
     (0, class_validator_1.IsBoolean)(),
     __metadata("design:type", Boolean)
 ], ToggleBusinessStatusDto.prototype, "isActive", void 0);
+class PublicBusinessRegistrationDto {
+}
+exports.PublicBusinessRegistrationDto = PublicBusinessRegistrationDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PublicBusinessRegistrationDto.prototype, "businessName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PublicBusinessRegistrationDto.prototype, "ownerName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PublicBusinessRegistrationDto.prototype, "phone", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PublicBusinessRegistrationDto.prototype, "address", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PublicBusinessRegistrationDto.prototype, "serviceArea", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: entities_1.BusinessRegistrationType }),
+    (0, class_validator_1.IsEnum)(entities_1.BusinessRegistrationType),
+    __metadata("design:type", String)
+], PublicBusinessRegistrationDto.prototype, "businessType", void 0);
 //# sourceMappingURL=business.dto.js.map

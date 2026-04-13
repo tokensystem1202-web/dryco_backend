@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OtpVerificationEntity = exports.NotificationEntity = exports.CommissionEntity = exports.ReviewEntity = exports.CouponEntity = exports.RiderEntity = exports.SubscriptionEntity = exports.OrderItemEntity = exports.OrderEntity = exports.ServiceEntity = exports.BusinessEntity = exports.UserEntity = exports.NotificationType = exports.DiscountType = exports.SubscriptionPlan = exports.PaymentStatus = exports.OrderStatus = exports.ServiceCategory = void 0;
+exports.OtpVerificationEntity = exports.NotificationEntity = exports.CommissionEntity = exports.ReviewEntity = exports.CouponEntity = exports.RiderEntity = exports.SubscriptionEntity = exports.OrderItemEntity = exports.OrderEntity = exports.ServiceEntity = exports.BusinessRegistrationEntity = exports.BusinessEntity = exports.UserEntity = exports.BusinessRegistrationStatus = exports.BusinessRegistrationType = exports.NotificationType = exports.DiscountType = exports.SubscriptionPlan = exports.PaymentStatus = exports.OrderStatus = exports.ServiceCategory = void 0;
 const typeorm_1 = require("typeorm");
 var ServiceCategory;
 (function (ServiceCategory) {
@@ -51,6 +51,17 @@ var NotificationType;
     NotificationType["PROMO"] = "promo";
     NotificationType["SYSTEM"] = "system";
 })(NotificationType || (exports.NotificationType = NotificationType = {}));
+var BusinessRegistrationType;
+(function (BusinessRegistrationType) {
+    BusinessRegistrationType["LAUNDRY"] = "laundry";
+    BusinessRegistrationType["DRY_CLEAN"] = "dry_clean";
+})(BusinessRegistrationType || (exports.BusinessRegistrationType = BusinessRegistrationType = {}));
+var BusinessRegistrationStatus;
+(function (BusinessRegistrationStatus) {
+    BusinessRegistrationStatus["PENDING"] = "pending";
+    BusinessRegistrationStatus["APPROVED"] = "approved";
+    BusinessRegistrationStatus["REJECTED"] = "rejected";
+})(BusinessRegistrationStatus || (exports.BusinessRegistrationStatus = BusinessRegistrationStatus = {}));
 class BaseEntityFields {
 }
 __decorate([
@@ -165,6 +176,48 @@ __decorate([
 exports.BusinessEntity = BusinessEntity = __decorate([
     (0, typeorm_1.Entity)('businesses')
 ], BusinessEntity);
+let BusinessRegistrationEntity = class BusinessRegistrationEntity extends BaseEntityFields {
+};
+exports.BusinessRegistrationEntity = BusinessRegistrationEntity;
+__decorate([
+    (0, typeorm_1.Column)({ name: 'business_name' }),
+    __metadata("design:type", String)
+], BusinessRegistrationEntity.prototype, "businessName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'owner_name' }),
+    __metadata("design:type", String)
+], BusinessRegistrationEntity.prototype, "ownerName", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], BusinessRegistrationEntity.prototype, "phone", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], BusinessRegistrationEntity.prototype, "address", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'service_area' }),
+    __metadata("design:type", String)
+], BusinessRegistrationEntity.prototype, "serviceArea", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'business_type', type: 'enum', enum: BusinessRegistrationType }),
+    __metadata("design:type", String)
+], BusinessRegistrationEntity.prototype, "businessType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'id_proof_path', nullable: true }),
+    __metadata("design:type", String)
+], BusinessRegistrationEntity.prototype, "idProofPath", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'shop_image_path', nullable: true }),
+    __metadata("design:type", String)
+], BusinessRegistrationEntity.prototype, "shopImagePath", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'enum', enum: BusinessRegistrationStatus, default: BusinessRegistrationStatus.PENDING }),
+    __metadata("design:type", String)
+], BusinessRegistrationEntity.prototype, "status", void 0);
+exports.BusinessRegistrationEntity = BusinessRegistrationEntity = __decorate([
+    (0, typeorm_1.Entity)('business_registrations')
+], BusinessRegistrationEntity);
 let ServiceEntity = class ServiceEntity extends BaseEntityFields {
 };
 exports.ServiceEntity = ServiceEntity;

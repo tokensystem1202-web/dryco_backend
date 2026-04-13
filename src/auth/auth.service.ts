@@ -14,6 +14,7 @@ import { Repository } from 'typeorm';
 import { OtpVerificationEntity, UserEntity } from '../database/entities';
 import { AuthenticatedUser } from './auth.types';
 import { LoginDto } from './dto/login.dto';
+import { LoginWithOtpDto, RegisterWithOtpDto } from './dto/otp-auth.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/reset-password.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -92,6 +93,49 @@ export class AuthService {
     };
   }
 
+  async registerWithOtp(dto: RegisterWithOtpDto) {
+    const recipient = this.normalizeRecipient(dto.recipient);
+    const normalizedEmail = dto.email.toLowerCase().trim();
+    const normalizedPhone = dto.phone.trim();
+
+    if (![normalizedEmail, normalizedPhone.toLowerCase()].includes(recipient)) {
+      throw new BadRequestException('OTP recipient must match the email or phone used for signup');
+    }
+
+    await this.consumeOtp(recipient, dto.otp);
+
+    return this.register({
+      name: dto.name,
+      email: dto.email,
+      phone: dto.phone,
+      password: dto.password,
+      role: dto.role,
+      city: dto.city,
+    });
+  }
+
+  async loginWithOtp(dto: LoginWithOtpDto) {
+    const recipient = this.normalizeRecipient(dto.recipient);
+    const userEntity = await this.usersRepository.findOne({
+      where: [
+        { email: recipient, isActive: true },
+        { phone: dto.recipient.trim(), isActive: true },
+      ],
+    });
+
+    if (!userEntity) {
+      throw new UnauthorizedException('No active account found for this recipient');
+    }
+
+    await this.consumeOtp(recipient, dto.otp);
+    const user = this.toAuthenticatedUser(userEntity);
+
+    return {
+      user,
+      tokens: await this.buildTokens(user),
+    };
+  }
+
   async refreshToken(dto: RefreshTokenDto) {
     const payload = this.jwtService.verify(dto.refreshToken, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET', 'washflow_refresh_secret'),
@@ -130,20 +174,7 @@ export class AuthService {
   }
 
   async verifyOtp(dto: VerifyOtpDto) {
-    const record = await this.otpRepository.findOne({
-      where: {
-        recipient: dto.recipient.trim().toLowerCase(),
-        otp: dto.otp,
-        isUsed: false,
-      },
-    });
-
-    if (!record || record.expiresAt < new Date()) {
-      throw new BadRequestException('Invalid or expired OTP');
-    }
-
-    record.isUsed = true;
-    await this.otpRepository.save(record);
+    await this.consumeOtp(dto.recipient, dto.otp);
 
     return {
       recipient: dto.recipient,
@@ -222,6 +253,61 @@ export class AuthService {
     return this.toAuthenticatedUser(existingUser);
   }
 
+  async ensureAdminAccount(email: string, password: string, name = 'DryCo Admin') {
+    const normalizedEmail = email.toLowerCase().trim();
+
+    let adminUser = await this.usersRepository.findOne({
+      where: { email: normalizedEmail },
+    });
+
+    if (!adminUser) {
+      adminUser = await this.usersRepository.save(
+        this.usersRepository.create({
+          name,
+          email: normalizedEmail,
+          phone: this.buildAdminPhone(normalizedEmail),
+          passwordHash: await hash(password, 10),
+          role: 'admin',
+          isActive: true,
+        }),
+      );
+
+      return {
+        created: true,
+        updated: false,
+        email: adminUser.email,
+      };
+    }
+
+    let shouldUpdate = false;
+
+    if (adminUser.role !== 'admin') {
+      adminUser.role = 'admin';
+      shouldUpdate = true;
+    }
+
+    if (!adminUser.isActive) {
+      adminUser.isActive = true;
+      shouldUpdate = true;
+    }
+
+    const passwordMatches = await compare(password, adminUser.passwordHash);
+    if (!passwordMatches) {
+      adminUser.passwordHash = await hash(password, 10);
+      shouldUpdate = true;
+    }
+
+    if (shouldUpdate) {
+      await this.usersRepository.save(adminUser);
+    }
+
+    return {
+      created: false,
+      updated: shouldUpdate,
+      email: adminUser.email,
+    };
+  }
+
   private async buildTokens(user: AuthenticatedUser) {
     const accessToken = await this.jwtService.signAsync(user, {
       secret: this.configService.get<string>('JWT_SECRET', 'washflow_access_secret'),
@@ -234,6 +320,35 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  private async consumeOtp(recipient: string, otp: string) {
+    const record = await this.otpRepository.findOne({
+      where: {
+        recipient: this.normalizeRecipient(recipient),
+        otp,
+        isUsed: false,
+      },
+    });
+
+    if (!record || record.expiresAt < new Date()) {
+      throw new BadRequestException('Invalid or expired OTP');
+    }
+
+    record.isUsed = true;
+    await this.otpRepository.save(record);
+
+    return record;
+  }
+
+  private normalizeRecipient(recipient: string) {
+    return recipient.trim().toLowerCase();
+  }
+
+  private buildAdminPhone(email: string) {
+    const digits = email.replace(/\D/g, '');
+    const suffix = (digits || '7718000000').slice(-10).padStart(10, '7');
+    return suffix;
   }
 
   private toAuthenticatedUser(user: UserEntity): AuthenticatedUser {

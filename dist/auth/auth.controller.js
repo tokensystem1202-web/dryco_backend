@@ -19,6 +19,7 @@ const current_user_decorator_1 = require("../common/decorators/current-user.deco
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
 const auth_service_1 = require("./auth.service");
 const login_dto_1 = require("./dto/login.dto");
+const otp_auth_dto_1 = require("./dto/otp-auth.dto");
 const otp_dto_1 = require("./dto/otp.dto");
 const reset_password_dto_1 = require("./dto/reset-password.dto");
 const refresh_token_dto_1 = require("./dto/refresh-token.dto");
@@ -32,6 +33,12 @@ let AuthController = class AuthController {
     }
     login(dto) {
         return this.authService.login(dto);
+    }
+    registerWithOtp(dto) {
+        return this.authService.registerWithOtp(dto);
+    }
+    loginWithOtp(dto) {
+        return this.authService.loginWithOtp(dto);
     }
     refreshToken(dto) {
         return this.authService.refreshToken(dto);
@@ -70,6 +77,20 @@ __decorate([
     __metadata("design:paramtypes", [login_dto_1.LoginDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "login", null);
+__decorate([
+    (0, common_1.Post)('register-otp'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [otp_auth_dto_1.RegisterWithOtpDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "registerWithOtp", null);
+__decorate([
+    (0, common_1.Post)('login-otp'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [otp_auth_dto_1.LoginWithOtpDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "loginWithOtp", null);
 __decorate([
     (0, common_1.Post)('refresh-token'),
     __param(0, (0, common_1.Body)()),

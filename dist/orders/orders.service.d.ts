@@ -90,7 +90,30 @@ export declare class OrdersService {
     }>;
     getBusinessOrders(user: AuthenticatedUser, query: Record<string, string | undefined>): Promise<{
         filters: Record<string, string>;
-        items: OrderEntity[];
+        items: {
+            items: OrderItemEntity[];
+            orderNumber: string;
+            customerId: string;
+            businessId: string;
+            riderId?: string;
+            status: OrderStatus;
+            pickupSlot: string;
+            deliverySlot: string;
+            pickupDate: string;
+            deliveryDate: string;
+            subtotal: number;
+            discountAmount: number;
+            couponCode?: string;
+            taxAmount: number;
+            totalAmount: number;
+            paymentStatus: PaymentStatus;
+            paymentMethod?: string;
+            paymentId?: string;
+            specialInstructions?: string;
+            id: string;
+            createdAt: Date;
+            updatedAt?: Date;
+        }[];
     }>;
     updateOrderStatus(user: AuthenticatedUser, id: string, dto: UpdateOrderStatusDto): Promise<{
         orderId: string;

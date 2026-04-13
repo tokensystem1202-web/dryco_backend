@@ -40,6 +40,14 @@ begin
   if not exists (select 1 from pg_type where typname = 'notification_type_enum') then
     create type public.notification_type_enum as enum ('order', 'promo', 'system');
   end if;
+
+  if not exists (select 1 from pg_type where typname = 'business_registration_type_enum') then
+    create type public.business_registration_type_enum as enum ('laundry', 'dry_clean');
+  end if;
+
+  if not exists (select 1 from pg_type where typname = 'business_registration_status_enum') then
+    create type public.business_registration_status_enum as enum ('pending', 'approved', 'rejected');
+  end if;
 end $$;
 
 create or replace function public.set_updated_at()
@@ -82,6 +90,21 @@ create table if not exists public.businesses (
   commission_rate numeric(5,2) not null default 15.00,
   rating numeric(3,2) not null default 0,
   total_orders integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.business_registrations (
+  id uuid primary key default gen_random_uuid(),
+  business_name text not null,
+  owner_name text not null,
+  phone text not null,
+  address text not null,
+  service_area text not null,
+  business_type public.business_registration_type_enum not null,
+  id_proof_path text,
+  shop_image_path text,
+  status public.business_registration_status_enum not null default 'pending',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -233,6 +256,8 @@ create table if not exists public.otp_verifications (
 
 create index if not exists idx_businesses_city on public.businesses(city);
 create index if not exists idx_businesses_is_approved on public.businesses(is_approved);
+create index if not exists idx_business_registrations_status on public.business_registrations(status);
+create index if not exists idx_business_registrations_phone on public.business_registrations(phone);
 create index if not exists idx_services_business_id on public.services(business_id);
 create index if not exists idx_orders_customer_id on public.orders(customer_id);
 create index if not exists idx_orders_business_id on public.orders(business_id);
@@ -252,6 +277,11 @@ for each row execute function public.set_updated_at();
 drop trigger if exists trg_businesses_updated_at on public.businesses;
 create trigger trg_businesses_updated_at
 before update on public.businesses
+for each row execute function public.set_updated_at();
+
+drop trigger if exists trg_business_registrations_updated_at on public.business_registrations;
+create trigger trg_business_registrations_updated_at
+before update on public.business_registrations
 for each row execute function public.set_updated_at();
 
 drop trigger if exists trg_services_updated_at on public.services;

@@ -1,9 +1,23 @@
 import { AuthenticatedUser } from '../auth/auth.types';
-import { ApprovalDto, CreateBusinessDto, ToggleBusinessStatusDto, UpdateBusinessDto, UpdateCommissionDto } from './dto/business.dto';
+import { ApprovalDto, CreateBusinessDto, PublicBusinessRegistrationDto, ToggleBusinessStatusDto, UpdateBusinessDto, UpdateCommissionDto } from './dto/business.dto';
 import { BusinessesService } from './businesses.service';
 export declare class BusinessesController {
     private readonly businessesService;
     constructor(businessesService: BusinessesService);
+    submitBusinessRegistration(dto: PublicBusinessRegistrationDto, files: {
+        idProof?: Array<{
+            filename: string;
+        }>;
+        shopImage?: Array<{
+            filename: string;
+        }>;
+    }): Promise<{
+        id: string;
+        name: string;
+        owner: string;
+        phone: string;
+        status: import("../database/entities").BusinessRegistrationStatus;
+    }>;
     registerBusiness(user: AuthenticatedUser, dto: CreateBusinessDto): Promise<import("../database/entities").BusinessEntity>;
     listBusinesses(query: Record<string, string | undefined>): Promise<{
         filters: Record<string, string>;
@@ -37,6 +51,48 @@ export declare class BusinessesController {
         activeRiders: number;
     }>;
     adminListBusinesses(): Promise<import("../database/entities").BusinessEntity[]>;
+    adminListBusinessRegistrations(): Promise<{
+        id: string;
+        businessName: string;
+        ownerName: string;
+        phone: string;
+        address: string;
+        serviceArea: string;
+        businessType: import("../database/entities").BusinessRegistrationType;
+        status: import("../database/entities").BusinessRegistrationStatus;
+        createdAt: Date;
+        documents: {
+            idProofUrl: string;
+            shopImageUrl: string;
+        };
+    }[]>;
+    adminGetBusinessRegistration(id: string): Promise<{
+        id: string;
+        businessName: string;
+        ownerName: string;
+        phone: string;
+        address: string;
+        serviceArea: string;
+        businessType: import("../database/entities").BusinessRegistrationType;
+        status: import("../database/entities").BusinessRegistrationStatus;
+        createdAt: Date;
+        documents: {
+            idProofUrl: string;
+            shopImageUrl: string;
+        };
+    }>;
+    approveBusinessRegistration(id: string): Promise<{
+        registrationId: string;
+        status: import("../database/entities").BusinessRegistrationStatus.APPROVED;
+        businessId: string;
+        loginPhone: string;
+        loginMode: string;
+        businessPortalEnabled: boolean;
+    }>;
+    rejectBusinessRegistration(id: string): Promise<{
+        registrationId: string;
+        status: import("../database/entities").BusinessRegistrationStatus.REJECTED;
+    }>;
     approveBusiness(id: string, dto: ApprovalDto): Promise<import("../database/entities").BusinessEntity>;
     toggleBusinessStatus(id: string, dto: ToggleBusinessStatusDto): Promise<import("../database/entities").BusinessEntity>;
     updateCommission(id: string, dto: UpdateCommissionDto): Promise<import("../database/entities").BusinessEntity>;

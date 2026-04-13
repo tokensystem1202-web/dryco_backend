@@ -24,7 +24,7 @@ const STATUS_FLOW = {
     [washflow_entity_1.OrderStatus.REQUESTED]: [washflow_entity_1.OrderStatus.ACCEPTED, washflow_entity_1.OrderStatus.CANCELLED],
     [washflow_entity_1.OrderStatus.ACCEPTED]: [washflow_entity_1.OrderStatus.PICKED_UP, washflow_entity_1.OrderStatus.CANCELLED],
     [washflow_entity_1.OrderStatus.PICKED_UP]: [washflow_entity_1.OrderStatus.CLEANING],
-    [washflow_entity_1.OrderStatus.CLEANING]: [washflow_entity_1.OrderStatus.OUT_FOR_DELIVERY],
+    [washflow_entity_1.OrderStatus.CLEANING]: [washflow_entity_1.OrderStatus.OUT_FOR_DELIVERY, washflow_entity_1.OrderStatus.DELIVERED],
     [washflow_entity_1.OrderStatus.OUT_FOR_DELIVERY]: [washflow_entity_1.OrderStatus.DELIVERED],
     [washflow_entity_1.OrderStatus.DELIVERED]: [],
     [washflow_entity_1.OrderStatus.CANCELLED]: [],
@@ -200,6 +200,9 @@ let OrdersService = class OrdersService {
         if (!business) {
             throw new common_1.NotFoundException('Business not found for this user');
         }
+        if (!business.isApproved || !business.isActive) {
+            throw new common_1.ForbiddenException('Only approved businesses can manage live orders');
+        }
         const builder = this.ordersRepository.createQueryBuilder('order');
         builder.where('order.businessId = :businessId', { businessId: business.id });
         if (query.status) {
@@ -208,9 +211,16 @@ let OrdersService = class OrdersService {
         if (query.paymentStatus) {
             builder.andWhere('order.paymentStatus = :paymentStatus', { paymentStatus: query.paymentStatus });
         }
+        const items = await builder.orderBy('order.createdAt', 'DESC').getMany();
+        const orderItems = items.length
+            ? await this.orderItemsRepository.find({ where: { orderId: (0, typeorm_2.In)(items.map((item) => item.id)) } })
+            : [];
         return {
             filters: query,
-            items: await builder.orderBy('order.createdAt', 'DESC').getMany(),
+            items: items.map((item) => ({
+                ...item,
+                items: orderItems.filter((orderItem) => orderItem.orderId === item.id),
+            })),
         };
     }
     async updateOrderStatus(user, id, dto) {
@@ -309,6 +319,9 @@ let OrdersService = class OrdersService {
         }
         if (business.userId !== user.userId) {
             throw new common_1.ForbiddenException('You can manage only your own business orders');
+        }
+        if (!business.isApproved || !business.isActive) {
+            throw new common_1.ForbiddenException('Only approved businesses can manage orders');
         }
     }
     generateOrderNumber() {

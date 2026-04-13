@@ -78,6 +78,16 @@ export class OrdersController {
   }
 
   @Roles(UserRole.BUSINESS)
+  @Patch('orders/:id/status')
+  updateOrderStatusAlias(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateOrderStatusDto,
+  ) {
+    return this.ordersService.updateOrderStatus(user, id, dto);
+  }
+
+  @Roles(UserRole.BUSINESS)
   @Patch('business/orders/:id/assign-rider')
   assignRider(
     @CurrentUser() user: AuthenticatedUser,
